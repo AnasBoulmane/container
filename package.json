@@ -1,15 +1,9 @@
 {
   "name": "@express.ts/container",
-  "version": "0.8.1",
+  "version": "0.8.0",
   "description": "test package",
-  "main": "dist/index",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts",
-    "dist/index.d.ts"
-  ],
   "author": "aboulmane <anassboulmane@gmail.com>",
+  "main": "dist/index",
   "license": "ISC",
   "homepage": "https://github.com/express-ts/container.git#README",
   "repository": {
@@ -27,15 +21,6 @@
     "format": "prettier-tslint fix \"./**/*.ts\"",
     "prepack": "echo \"prepack...\" && yarn build"
   },
-  "tags": [
-    "di",
-    "IoC",
-    "container",
-    "express.ts",
-    "typescript",
-    "typescript-di",
-    "dependency-injection"
-  ],
   "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.2.3",
@@ -52,5 +37,31 @@
     "ts-node": "^8.4.1",
     "tslint": "^5.20.0",
     "typescript": "^3.6.4"
-  }
+  },
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/index.d.ts"
+  ],
+  "tags": [
+    "di",
+    "IoC",
+    "typeDI",
+    "container",
+    "express.ts",
+    "typescript",
+    "typescript-di",
+    "dependency-injection"
+  ],
+  "keywords": [
+    "di",
+    "IoC",
+    "typeDI",
+    "container",
+    "express.ts",
+    "typescript",
+    "typescript-di",
+    "dependency-injection"
+  ]
 }
