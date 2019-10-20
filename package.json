@@ -22,6 +22,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.pack.json",
     "test": "jest --forceExit --coverage --verbose",
+    "coveralls": "jest --forceExit --coverage --coverageReporters=text-lcov | coveralls",
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "format": "prettier-tslint fix \"./**/*.ts\"",
     "prepack": "echo \"prepack...\" && yarn build"
@@ -41,6 +42,7 @@
     "@types/jest": "^24.0.15",
     "@types/sinon-chai": "^3.2.3",
     "chai": "^4.2.0",
+    "coveralls": "^3.0.6",
     "jest": "^24.9.0",
     "prettier": "^1.18.2",
     "prettier-tslint": "^0.4.2",

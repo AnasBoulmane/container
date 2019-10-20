@@ -1,7 +1,22 @@
 language: node_js
-node_js:
-#  - stable
-  - 9
-  - 8
-  - 6
-  - 4
+node_js: '12'
+cache: yarn
+
+env:
+  global:
+    - NODE_ENV=test
+
+addons:
+  sonarcloud:
+    organization: $SONAR_ORG
+    token:
+      secure: $SONAR_TOKEN
+
+install:
+  - yarn install
+
+script:
+  - yarn build
+  - yarn coveralls
+
+after_success: yarn coverage
