@@ -13,8 +13,9 @@ logs
 results
 tmp
 
-# Build
-dist
+# Sources
+src
+node_modules
 
 # Coverage reports
 coverage
@@ -23,18 +24,27 @@ coverage
 .env
 
 # Dependency directory
-yarn.lock
 node_modules
-package-lock.json
 bower_components
 
 # Editors
-.vscode/
-.idea/
+.idea
 *.iml
-*.xml
 
 # OS metadata
 .DS_Store
 Thumbs.db
+
+.*.swp
+._*
+.DS_Store
+.git
+.hg
+.npmrc
+.lock-wscript
+.svn
+.wafpickle-*
+config.gypi
+CVS
+npm-debug.log
 
