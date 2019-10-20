@@ -1,7 +1,20 @@
 language: node_js
 node_js:
-#  - stable
-  - 9
+  - stable
+  - 10
   - 8
   - 6
-  - 4
+cache: yarn
+
+env:
+  global:
+    - NODE_ENV=test
+
+install:
+  - yarn install
+
+script:
+  - yarn build
+  - yarn coveralls
+
+after_success: yarn coverage
