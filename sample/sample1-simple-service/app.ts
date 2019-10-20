@@ -1,12 +1,12 @@
 import "reflect-metadata";
-import {Container} from "../../src/index";
-import {CarFactory} from "./CarFactory";
-import {Counter} from "./Counter";
+import { Container } from "../../src/index";
+import { CarFactory } from "./CarFactory";
+import { Counter } from "./Counter";
 
-let carFactory = Container.get(CarFactory);
+const carFactory = Container.get<CarFactory>(CarFactory);
 carFactory.create();
 
-let counter = Container.get(Counter);
+const counter = Container.get<Counter>(Counter);
 counter.increase();
 counter.increase();
 counter.increase();

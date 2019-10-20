@@ -1,186 +1,217 @@
+/* tslint:disable:max-classes-per-file */
 import "reflect-metadata";
-import {Container} from "../../src/Container";
-import {Service} from "../../src/decorators/Service";
+import * as chai from "chai";
+import sinon_chai from "sinon-chai";
 
-describe("Service Decorator", function() {
+import { Container, Service } from "../../src";
 
-    beforeEach(() => Container.reset());
+chai.should();
+chai.use(sinon_chai);
 
-    it("should register class in the container, and its instance should be retrievable", function() {
-        @Service()
-        class TestService {
-        }
-        @Service("super.service")
-        class NamedService {
-        }
-        Container.get(TestService).should.be.instanceOf(TestService);
-        Container.get(TestService).should.not.be.instanceOf(NamedService);
-    });
+describe("Service Decorator", () => {
+  beforeEach(() => Container.reset());
 
-    it("should register class in the container with given name, and its instance should be retrievable", function() {
-        @Service()
-        class TestService {
-        }
-        @Service("super.service")
-        class NamedService {
-        }
-        Container.get("super.service").should.be.instanceOf(NamedService);
-        Container.get("super.service").should.not.be.instanceOf(TestService);
-    });
+  it("should register class in the container, and its instance should be retrievable", () => {
+    @Service()
+    class TestService {}
 
-    it("should register class in the container, and its parameter dependencies should be properly initialized", function() {
-        @Service()
-        class TestService {
-        }
-        @Service()
-        class SecondTestService {
-        }
-        @Service()
-        class TestServiceWithParameters {
-            constructor(public testClass: TestService, public secondTest: SecondTestService) {
-            }
-        }
-        Container.get(TestServiceWithParameters).should.be.instanceOf(TestServiceWithParameters);
-        Container.get(TestServiceWithParameters).testClass.should.be.instanceOf(TestService);
-        Container.get(TestServiceWithParameters).secondTest.should.be.instanceOf(SecondTestService);
-    });
+    @Service("super.service")
+    class NamedService {}
 
-    it("should support factory functions", function() {
+    Container.get(TestService).should.be.instanceOf(TestService);
+    Container.get(TestService).should.not.be.instanceOf(NamedService);
+  });
 
-        class Engine {
-            constructor(public serialNumber: string) {
-            }
-        }
+  it("should register class in the container with given name, and its instance should be retrievable", () => {
+    @Service()
+    class TestService {}
 
-        function createCar() {
-            return new Car("BMW", new Engine("A-123"));
-        }
+    @Service("super.service")
+    class NamedService {}
 
-        @Service({ factory: createCar })
-        class Car {
-            constructor(public name: string, public engine: Engine) {
-            }
-        }
+    Container.get("super.service").should.be.instanceOf(NamedService);
+    Container.get("super.service").should.not.be.instanceOf(TestService);
+  });
 
-        Container.get(Car).name.should.be.equal("BMW");
-        Container.get(Car).engine.serialNumber.should.be.equal("A-123");
+  it("should register class in the container, and its parameter dependencies should be properly initialized", () => {
+    @Service()
+    class TestService {}
 
-    });
+    @Service()
+    class SecondTestService {}
 
-    it("should support factory classes", function() {
+    @Service()
+    class TestServiceWithParameters {
+      constructor (public testClass: TestService, public secondTest: SecondTestService) {}
+    }
 
-        @Service()
-        class Engine {
-            public serialNumber = "A-123";
-        }
+    Container.get(TestServiceWithParameters).should.be.instanceOf(TestServiceWithParameters);
+    Container.get<TestServiceWithParameters>(TestServiceWithParameters).testClass.should.be.instanceOf(TestService);
+    Container.get<TestServiceWithParameters>(TestServiceWithParameters).secondTest.should.be.instanceOf(
+      SecondTestService,
+    );
+  });
 
-        @Service()
-        class CarFactory {
+  it("should support factory functions", () => {
+    class Engine {
+      constructor (public serialNumber: string) {}
+    }
 
-            constructor(public engine: Engine) {
-            }
+    function createCar () {
+      return new Car("BMW", new Engine("A-123"));
+    }
 
-            createCar() {
-                return new Car("BMW", this.engine);
-            }
+    @Service({ factory: createCar })
+    class Car {
+      constructor (public name: string, public engine: Engine) {}
+    }
 
-        }
+    Container.get<Car>(Car).name.should.be.equal("BMW");
+    Container.get<Car>(Car).engine.serialNumber.should.be.equal("A-123");
+  });
 
-        @Service({ factory: [CarFactory, "createCar"] })
-        class Car {
-            name: string;
-            constructor(name: string, public engine: Engine) {
-                this.name = name;
-            }
-        }
+  it("should support factory classes", () => {
+    @Service()
+    class Engine {
+      public serialNumber = "A-123";
+    }
 
-        Container.get(Car).name.should.be.equal("BMW");
-        Container.get(Car).engine.serialNumber.should.be.equal("A-123");
+    @Service()
+    class CarFactory {
+      constructor (public engine: Engine) {}
 
-    });
+      createCar () {
+        return new Car("BMW", this.engine);
+      }
+    }
 
-    it("should support factory function with arguments", function() {
+    @Service({ factory: [CarFactory, "createCar"] })
+    class Car {
+      name: string;
 
-        @Service()
-        class Engine {
-            public type = "V8";
-        }
+      constructor (name: string, public engine: Engine) {
+        this.name = name;
+      }
+    }
 
-        @Service()
-        class CarFactory {
-            createCar(engine: Engine) {
-                engine.type = "V6";
-                return new Car(engine);
-            }
-        }
+    Container.get<Car>(Car).name.should.be.equal("BMW");
+    Container.get<Car>(Car).engine.serialNumber.should.be.equal("A-123");
+  });
 
-        @Service({ factory: [CarFactory, "createCar"] })
-        class Car {
-            constructor(public engine: Engine) {
-            }
-        }
+  it("should support factory function with arguments", () => {
+    @Service()
+    class Engine {
+      public type = "V8";
+    }
 
-        Container.get(Car).engine.type.should.be.equal("V6");
+    @Service()
+    class Wheel {
+      count = 4;
+    }
 
-    });
+    @Service()
+    class CarFactory {
+      createCar (engine: Engine, wheel: Wheel) {
+        engine.type = "V6";
+        return new Car(engine, wheel);
+      }
+    }
 
-    it("should support transient services", function() {
+    @Service({ factory: [CarFactory, "createCar"] })
+    class Car {
+      constructor (public engine: Engine, public wheel: Wheel) {}
+    }
 
-        @Service()
-        class Car {
-            public serial = Math.random();
-        }
+    Container.get<Car>(Car).engine.type.should.be.equal("V6");
+    Container.get<Car>(Car).wheel.count.should.be.equal(4);
+  });
 
-        @Service({ transient: true })
-        class Engine {
-            public serial = Math.random();
-        }
+  it("should throw Error: factory function with arguments (service not found)", () => {
+    // @Service()
+    class Engine2 {
+      public type = "V8";
+    }
 
-        const car1Serial = Container.get(Car).serial;
-        const car2Serial = Container.get(Car).serial;
-        const car3Serial = Container.get(Car).serial;
+    @Service({ factory: () => new Wheel2(3) })
+    class Wheel2 {
+      count = 4;
 
-        const engine1Serial = Container.get(Engine).serial;
-        const engine2Serial = Container.get(Engine).serial;
-        const engine3Serial = Container.get(Engine).serial;
+      constructor (count: number) {
+        this.count = count;
+      }
+    }
 
-        car1Serial.should.be.equal(car2Serial);
-        car1Serial.should.be.equal(car3Serial);
+    // @Service()
+    class CarFactory {
+      createCar (engine: Engine2, wheel: Wheel2) {
+        engine.type = "V6";
+        return new Car(engine, wheel);
+      }
+    }
 
-        engine1Serial.should.not.be.equal(engine2Serial);
-        engine2Serial.should.not.be.equal(engine3Serial);
-        engine3Serial.should.not.be.equal(engine1Serial);
-    });
+    @Service({ factory: [CarFactory, "createCar"] })
+    class Car {
+      constructor (public engine: Engine2, public wheel: Wheel2) {}
+    }
 
-    it("should support global services", function() {
+    Container.get<Car>(Car).engine.type.should.be.equal("V6");
+    Container.get<Car>(Car).wheel.count.should.be.equal(3);
+  });
 
-        @Service()
-        class Engine {
-            public name = "sporty";
-        }
+  it("should support transient services", () => {
+    @Service()
+    class Car {
+      public serial = Math.random();
+    }
 
-        @Service({ global: true })
-        class Car {
-            public name = "SportCar";
-        }
+    @Service({ transient: true })
+    class Engine {
+      public serial = Math.random();
+    }
 
-        const globalContainer = Container;
-        const scopedContainer = Container.of("enigma");
+    const car1Serial = Container.get<Car>(Car).serial;
+    const car2Serial = Container.get<Car>(Car).serial;
+    const car3Serial = Container.get<Car>(Car).serial;
 
-        globalContainer.get(Car).name.should.be.equal("SportCar");
-        scopedContainer.get(Car).name.should.be.equal("SportCar");
+    const engine1Serial = Container.get<Engine>(Engine).serial;
+    const engine2Serial = Container.get<Engine>(Engine).serial;
+    const engine3Serial = Container.get<Engine>(Engine).serial;
 
-        globalContainer.get(Engine).name.should.be.equal("sporty");
-        scopedContainer.get(Engine).name.should.be.equal("sporty");
+    car1Serial.should.be.equal(car2Serial);
+    car1Serial.should.be.equal(car3Serial);
 
-        globalContainer.get(Car).name = "MyCar";
-        globalContainer.get(Engine).name = "regular";
+    engine1Serial.should.not.be.equal(engine2Serial);
+    engine2Serial.should.not.be.equal(engine3Serial);
+    engine3Serial.should.not.be.equal(engine1Serial);
+  });
 
-        globalContainer.get(Car).name.should.be.equal("MyCar");
-        scopedContainer.get(Car).name.should.be.equal("MyCar");
+  it("should support global services", () => {
+    @Service()
+    class Engine {
+      public name = "sporty";
+    }
 
-        globalContainer.get(Engine).name.should.be.equal("regular");
-        scopedContainer.get(Engine).name.should.be.equal("sporty");
-    });
+    @Service({ global: true })
+    class Car {
+      public name = "SportCar";
+    }
 
+    const globalContainer = Container;
+    const scopedContainer = Container.of("enigma");
+
+    globalContainer.get<Car>(Car).name.should.be.equal("SportCar");
+    scopedContainer.get<Car>(Car).name.should.be.equal("SportCar");
+
+    globalContainer.get<Engine>(Engine).name.should.be.equal("sporty");
+    scopedContainer.get<Engine>(Engine).name.should.be.equal("sporty");
+
+    globalContainer.get<Car>(Car).name = "MyCar";
+    globalContainer.get<Engine>(Engine).name = "regular";
+
+    globalContainer.get<Car>(Car).name.should.be.equal("MyCar");
+    scopedContainer.get<Car>(Car).name.should.be.equal("MyCar");
+
+    globalContainer.get<Engine>(Engine).name.should.be.equal("regular");
+    scopedContainer.get<Engine>(Engine).name.should.be.equal("sporty");
+  });
 });

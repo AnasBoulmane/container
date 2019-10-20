@@ -1,34 +1,34 @@
 import "reflect-metadata";
-import {Container} from "../../../src/Container";
-import {Service} from "../../../src/decorators/Service";
-import {Inject} from "../../../src/decorators/Inject";
-import {expect} from "chai";
 
-describe("github issues > #42 Exception not thrown on missing binding", function() {
+import chai from "chai";
+import sinon_chai from "sinon-chai";
 
-    beforeEach(() => Container.reset());
+import { Container, Service, Inject } from "../../../src";
 
-    it("should work properly", function() {
+chai.should();
+chai.use(sinon_chai);
+const expect = chai.expect;
 
-        interface Factory {
-            create(): void;
-        }
+describe("github issues > #42 Exception not thrown on missing binding", function () {
+  beforeEach(() => Container.reset());
 
-        @Service()
-        class CoffeeMaker {
+  it("should work properly", function () {
+    interface Factory {
+      create (): void;
+    }
 
-            @Inject() // This is an incorrect usage of typedi because Factory is an interface
-            private factory: Factory;
+    @Service()
+    class CoffeeMaker {
+      @Inject() // This is an incorrect usage of typedi because Factory is an interface
+      private factory: Factory;
 
-            make() {
-                this.factory.create();
-            }
+      make () {
+        this.factory.create();
+      }
+    }
 
-        }
-
-        expect(() => {
-            Container.get(CoffeeMaker);
-        }).to.throw(Error);
-    });
-
+    expect(() => {
+      Container.get(CoffeeMaker);
+    }).to.throw(Error);
+  });
 });

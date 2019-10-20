@@ -1,12 +1,9 @@
 import "reflect-metadata";
-import {Container} from "../../src/index";
-import {QuestionRepository} from "./QuestionRepository";
-import {QuestionController} from "./QuestionController";
+import { Container } from "../../src";
+import { QuestionRepository } from "./QuestionRepository";
+import { QuestionController } from "./QuestionController";
 
-Container.import([
-    QuestionController,
-    QuestionRepository,
-]);
+Container.import([QuestionController, QuestionRepository]);
 const request1 = { param: "Timber" };
 const controller1 = Container.of(request1).get(QuestionController);
 controller1.save("Timber");

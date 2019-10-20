@@ -1,15 +1,14 @@
-import {Service} from "../../src/decorators/Service";
-import {QuestionRepository} from "./QuestionRepository";
+import { Service } from "../../src/decorators/Service";
+import { QuestionRepository } from "./QuestionRepository";
 
 @Service()
 export class QuestionController {
+  constructor (protected questionRepository: QuestionRepository) {}
 
-    constructor(protected questionRepository: QuestionRepository) {
+  save (name: string) {
+    if (name) {
+      this.questionRepository.userName = name;
     }
-
-    save(name: string) {
-        if (name)
-            this.questionRepository.userName = name;
-        this.questionRepository.save();
-    }
+    this.questionRepository.save();
+  }
 }

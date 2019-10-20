@@ -1,35 +1,37 @@
 import "reflect-metadata";
-import {Container} from "../../../src/Container";
-import {Service} from "../../../src/decorators/Service";
-import {Token} from "../../../src";
 
-describe("github issues > #48 Token service iDs in global container aren't inherited by scoped containers", function() {
+import chai from "chai";
+import sinon_chai from "sinon-chai";
 
-    beforeEach(() => Container.reset());
+import { Container, Service, Token } from "../../../src";
 
-    it("should work properly", function() {
+chai.should();
+chai.use(sinon_chai);
 
-        let poloCounter = 0;
+describe("github issues > #48 Token service iDs in global container aren't inherited by scoped containers", () => {
+  beforeEach(() => Container.reset());
 
-        interface FooService {
-            marco(): void;
-        }
+  it("should work properly", () => {
+    let poloCounter = 0;
 
-        const FooServiceToken = new Token<FooService>();
+    interface FooService {
+      marco (): void;
+    }
 
-        // @Service({ id: FooServiceToken, factory: () => new FooServiceI() }) <= Providing a factory does not work either
-        @Service(FooServiceToken)
-        class FooServiceI implements FooService {
-            public marco() {
-                poloCounter++;
-            }
-        }
+    const FooServiceToken = new Token<FooService>();
 
-        Container.get(FooServiceToken).marco();
-        const scopedContainer = Container.of({});
-        scopedContainer.get(FooServiceI).marco();
-        scopedContainer.get(FooServiceToken).marco();
-        poloCounter.should.be.equal(3);
-    });
+    // @Service({ id: FooServiceToken, factory: () => new FooServiceI() }) <= Providing a factory does not work either
+    @Service(FooServiceToken)
+    class FooServiceI implements FooService {
+      public marco () {
+        poloCounter++;
+      }
+    }
 
+    Container.get(FooServiceToken).marco();
+    const scopedContainer = Container.of({});
+    scopedContainer.get<FooServiceI>(FooServiceI).marco();
+    scopedContainer.get(FooServiceToken).marco();
+    poloCounter.should.be.equal(3);
+  });
 });

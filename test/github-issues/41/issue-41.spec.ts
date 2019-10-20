@@ -1,41 +1,44 @@
 import "reflect-metadata";
-import {Container} from "../../../src/Container";
-import {Service} from "../../../src/decorators/Service";
-import {Token} from "../../../src/Token";
 
-describe("github issues > #41 Token as service id in combination with factory", function() {
+import chai from "chai";
+import sinon_chai from "sinon-chai";
 
-    beforeEach(() => Container.reset());
+import { Container, Service, Token } from "../../../src";
 
-    it("should work properly", function() {
+chai.should();
+chai.use(sinon_chai);
 
-        interface SomeInterface {
-            foo(): string;
-        }
-        const SomeInterfaceToken = new Token<SomeInterface>();
+describe("github issues > #41 Token as service id in combination with factory", function () {
+  beforeEach(() => Container.reset());
 
-        @Service()
-        class SomeInterfaceFactory {
-            create() {
-                return new SomeImplementation();
-            }
-        }
+  it("should work properly", function () {
+    interface SomeInterface {
+      foo (): string;
+    }
 
-        @Service({
-            id: SomeInterfaceToken,
-            factory: [SomeInterfaceFactory, "create"]
-        })
-        class SomeImplementation implements SomeInterface {
-            foo() {
-                return "hello implementation";
-            }
-        }
+    const SomeInterfaceToken = new Token<SomeInterface>();
 
-        Container.set("moment", "A");
-        Container.set("jsonwebtoken", "B");
-        Container.set("cfg.auth.jwt", "C");
-        const someInterfaceImpl = Container.get(SomeInterfaceToken);
-        someInterfaceImpl.foo().should.be.equal("hello implementation");
-    });
+    @Service()
+    class SomeInterfaceFactory {
+      create () {
+        return new SomeImplementation();
+      }
+    }
 
+    @Service({
+      id: SomeInterfaceToken,
+      factory: [SomeInterfaceFactory, "create"],
+    })
+    class SomeImplementation implements SomeInterface {
+      foo () {
+        return "hello implementation";
+      }
+    }
+
+    Container.set("moment", "A");
+    Container.set("jsonwebtoken", "B");
+    Container.set("cfg.auth.jwt", "C");
+    const someInterfaceImpl = Container.get(SomeInterfaceToken);
+    someInterfaceImpl.foo().should.be.equal("hello implementation");
+  });
 });

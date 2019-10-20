@@ -1,8 +1,8 @@
 import "reflect-metadata";
-import {Container} from "../../src/Container";
-import {UserRepository} from "./UserRepository";
-import {User} from "./User";
-import {TestLogger} from "./TestLogger";
+import { Container } from "../../src/Container";
+import { UserRepository } from "./UserRepository";
+import { User } from "./User";
+import { TestLogger } from "./TestLogger";
 
 const logger = new TestLogger();
 Container.set(UserRepository, new UserRepository(logger));
