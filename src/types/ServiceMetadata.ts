@@ -31,7 +31,7 @@ export interface ServiceMetadata<T, K extends keyof T> {
   /**
    * Service unique identifier.
    */
-  id?: ServiceIdentifier;
+  id: ServiceIdentifier;
 
   /**
    * Factory function used to initialize this service.

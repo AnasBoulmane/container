@@ -14,7 +14,6 @@ export function Service<T, K extends keyof T> (
   maybeFactory?: (...args: any[]) => any,
 ): any {
   if (arguments.length === 2 || optionsOrServiceName instanceof Function) {
-    console.log("debug", { optionsOrServiceName, maybeFactory });
     const serviceId = { service: new Token<T>() };
     const dependencies = arguments.length === 2 ? (optionsOrServiceName as any[]) : [];
     const factory = arguments.length === 2 ? maybeFactory : (optionsOrServiceName as (...args: any[]) => any);
@@ -31,21 +30,22 @@ export function Service<T, K extends keyof T> (
   } else {
     return (target: (...args: any[]) => any) => {
       const service: ServiceMetadata<T, K> = {
+        id: target,
         type: target,
       };
 
       if (typeof optionsOrServiceName === "string" || optionsOrServiceName instanceof Token) {
-        service.id = optionsOrServiceName;
+        service.id = optionsOrServiceName || target;
         service.multiple = (optionsOrServiceName as ServiceOptions<T, K>).multiple;
         service.global = (optionsOrServiceName as ServiceOptions<T, K>).global || false;
         service.transient = (optionsOrServiceName as ServiceOptions<T, K>).transient;
       } else if (optionsOrServiceName) {
-        // ServiceOptions
-        service.id = (optionsOrServiceName as ServiceOptions<T, K>).id;
-        service.factory = (optionsOrServiceName as ServiceOptions<T, K>).factory;
-        service.multiple = (optionsOrServiceName as ServiceOptions<T, K>).multiple;
-        service.global = (optionsOrServiceName as ServiceOptions<T, K>).global || false;
-        service.transient = (optionsOrServiceName as ServiceOptions<T, K>).transient;
+        const serviceOptions = optionsOrServiceName as ServiceOptions<T, K>;
+        service.id = serviceOptions.id || target;
+        service.factory = serviceOptions.factory;
+        service.multiple = serviceOptions.multiple;
+        service.global = serviceOptions.global || false;
+        service.transient = serviceOptions.transient;
       }
 
       Container.set(service);

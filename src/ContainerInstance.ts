@@ -105,27 +105,32 @@ export class ContainerInstance {
     identifierOrServiceMetadata: ServiceIdentifier | ServiceMetadata<any, any> | (Array<ServiceMetadata<any, any>>),
     value?: any,
   ): this {
+    let newService: ServiceMetadata<any, any> = identifierOrServiceMetadata as any;
     if (identifierOrServiceMetadata instanceof Array) {
       identifierOrServiceMetadata.forEach((v: any) => this.set(v));
       return this;
     }
     if (typeof identifierOrServiceMetadata === "string" || identifierOrServiceMetadata instanceof Token) {
-      return this.set({ id: identifierOrServiceMetadata, value });
+      newService = { id: identifierOrServiceMetadata, value };
     }
     if (
       typeof identifierOrServiceMetadata === "object" &&
       (identifierOrServiceMetadata as { service: Token<any> }).service
     ) {
-      return this.set({ id: (identifierOrServiceMetadata as { service: Token<any> }).service, value });
+      newService = { id: (identifierOrServiceMetadata as { service: Token<any> }).service, value };
     }
     if (identifierOrServiceMetadata instanceof Function) {
-      return this.set({ type: identifierOrServiceMetadata, id: identifierOrServiceMetadata, value });
+      newService = { type: identifierOrServiceMetadata, id: identifierOrServiceMetadata, value };
+    }
+    if (
+      typeof identifierOrServiceMetadata === "object" &&
+      (identifierOrServiceMetadata as { type: any }).type &&
+      !(identifierOrServiceMetadata as { id: any }).id
+    ) {
+      const { type } = identifierOrServiceMetadata as any;
+      newService = { ...identifierOrServiceMetadata, id: type, value };
     }
 
-    // const newService: ServiceMetadata<any, any> = arguments.length === 1 &&
-    //   typeof identifierOrServiceMetadata === "object"  &&
-    //   !(identifierOrServiceMetadata instanceof Token) ? identifierOrServiceMetadata : undefined;
-    const newService: ServiceMetadata<any, any> = identifierOrServiceMetadata as any;
     const service = this.findService(newService.id);
     if (service && service.multiple !== true) {
       Object.assign(service, newService);
@@ -168,8 +173,9 @@ export class ContainerInstance {
       if (service.id) {
         return service.id === identifier;
       }
-
+      // todo not covered by unit tests
       if (service.type && identifier instanceof Function) {
+        console.log("todo not covered by unit tests");
         return service.type === identifier || identifier.prototype instanceof service.type;
       }
 
@@ -193,11 +199,6 @@ export class ContainerInstance {
 
         return service.id === identifier;
       }
-
-      if (service.type && identifier instanceof Function) {
-        return service.type === identifier;
-      } // todo: not sure why it was here || identifier.prototype instanceof service.type;
-
       return false;
     });
   }
@@ -240,7 +241,7 @@ export class ContainerInstance {
         throw new MissingProvidedServiceTypeError(identifier);
       }
 
-      service = { type };
+      service = { type, id: type };
       this.services.push(service);
     }
 
