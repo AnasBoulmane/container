@@ -9,10 +9,10 @@ chai.should();
 chai.use(sinon_chai);
 const expect = chai.expect;
 
-describe("github issues > #42 Exception not thrown on missing binding", function () {
+describe("github issues > #42 Exception not thrown on missing binding", () => {
   beforeEach(() => Container.reset());
 
-  it("should work properly", function () {
+  it("should work properly", () => {
     interface Factory {
       create (): void;
     }
