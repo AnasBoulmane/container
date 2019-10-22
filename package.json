@@ -1,7 +1,7 @@
 {
   "name": "@express.ts/container",
   "version": "0.8.0",
-  "description": "test package",
+  "description": "Simple yet powerful implementation of the Inversion of Control (IoC) principle. IoC is also known as dependency injection (DI). based on TypeDI",
   "author": "aboulmane <anassboulmane@gmail.com>",
   "main": "dist/index",
   "license": "ISC",
