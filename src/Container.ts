@@ -123,9 +123,10 @@ export class Container {
    * Registers a new handler.
    */
   static registerHandler (handler: Handler): Container {
-    const id = handler.propertyName && typeof handler.object !== "string" && !(handler.object instanceof Token)
-      ? handler.object.constructor
-      : handler.object;
+    const id =
+      handler.propertyName && typeof handler.object !== "string" && !(handler.object instanceof Token)
+        ? handler.object.constructor
+        : handler.object;
     const handlers = this.handlers.get(id);
     if (handlers) {
       handlers.push(handler);

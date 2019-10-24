@@ -33,7 +33,7 @@ describe("Performance", () => {
         value: (containerInstance) => "hello parameter",
       });
 
-      const [ getServices, getServicesTimer ] = useTimerify(() => {
+      const [getServices, getServicesTimer] = useTimerify(() => {
         Container.get<ExtraService>(ExtraService).luckyNumber.should.be.equal(777);
         Container.get<ExtraService>(ExtraService).message.should.be.equal("hello parameter");
       });
@@ -49,12 +49,14 @@ describe("Performance", () => {
         constructor (public luckyNumber: number, public message: string) {}
       }
 
-      const [ setAll, setAllTimer ] = useTimerify(() =>
-        Array.from(Array(1000000)).map((val, index) => Container.registerHandler({
-          index,
-          object: "test-service",
-          value: (containerInstance) => index,
-        })),
+      const [setAll, setAllTimer] = useTimerify(() =>
+        Array.from(Array(1000000)).map((val, index) =>
+          Container.registerHandler({
+            index,
+            object: "test-service",
+            value: (containerInstance) => index,
+          }),
+        ),
       );
 
       setAll();
@@ -74,7 +76,7 @@ describe("Performance", () => {
         value: (containerInstance) => "hello parameter",
       });
 
-      const [ getServices, getServicesTimer ] = useTimerify(() => {
+      const [getServices, getServicesTimer] = useTimerify(() => {
         Container.get<ExtraService>(ExtraService).luckyNumber.should.be.equal(777);
         Container.get<ExtraService>(ExtraService).message.should.be.equal("hello parameter");
       });
@@ -91,12 +93,14 @@ describe("Performance", () => {
         constructor (public luckyNumber: number, public message: string) {}
       }
 
-      const [ setAll, setAllTimer ] = useTimerify(() =>
-        Array.from(Array(1000000)).map((val, index) => Container.registerHandler({
-          propertyName: `test${index}-service`,
-          object: "test-service",
-          value: (containerInstance) => index,
-        })),
+      const [setAll, setAllTimer] = useTimerify(() =>
+        Array.from(Array(1000000)).map((val, index) =>
+          Container.registerHandler({
+            propertyName: `test${index}-service`,
+            object: "test-service",
+            value: (containerInstance) => index,
+          }),
+        ),
       );
 
       setAll();
@@ -116,7 +120,7 @@ describe("Performance", () => {
         value: (containerInstance) => "hello parameter",
       });
 
-      const [ getServices, getServicesTimer ] = useTimerify(() => {
+      const [getServices, getServicesTimer] = useTimerify(() => {
         Container.get<ExtraService>(ExtraService).luckyNumber.should.be.equal(777);
         Container.get<ExtraService>(ExtraService).message.should.be.equal("hello parameter");
       });
@@ -129,27 +133,26 @@ describe("Performance", () => {
   });
 
   describe("set & get", () => {
-
     it("should be able to manage a lot of services (10000 services)", async () => {
       class TestService {}
 
       const testService = new TestService();
       const test1Service = new TestService();
 
-      const [ setAll, setAllTimer ] = useTimerify(() =>
-        Array.from(Array(10000)).map((val, index) => Container.set({
-          id: `test${index}-service`,
-          value: test1Service,
-        })),
+      const [setAll, setAllTimer] = useTimerify(() =>
+        Array.from(Array(10000)).map((val, index) =>
+          Container.set({
+            id: `test${index}-service`,
+            value: test1Service,
+          }),
+        ),
       );
 
       setAll();
 
-      Container.set([
-        { id: TestService, value: testService },
-      ]);
+      Container.set([{ id: TestService, value: testService }]);
 
-      const [ getServices, getServicesTimer ] = useTimerify(() => {
+      const [getServices, getServicesTimer] = useTimerify(() => {
         Container.get(TestService).should.be.equal(testService);
         Container.get<TestService>("test999-service").should.be.equal(test1Service);
       });

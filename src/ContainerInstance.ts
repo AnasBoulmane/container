@@ -141,9 +141,9 @@ export class ContainerInstance {
       newService = { ...identifierOrServiceMetadata, id: type, value };
     }
 
-    if (newService.multiple === true)  {
+    if (newService.multiple === true) {
       const otherServices = this.groupedServices.get(newService.id) || [];
-      this.groupedServices.set(newService.id, [ ...otherServices, newService ]);
+      this.groupedServices.set(newService.id, [...otherServices, newService]);
     } else {
       const service = this.findService(newService.id);
       if (service && service.multiple !== true) {
@@ -180,16 +180,14 @@ export class ContainerInstance {
    * Filters registered service in the with a given service identifier.
    */
   private filterServices (identifier: ServiceIdentifier): Array<ServiceMetadata<any, any>> {
-    return this.services.get(identifier) as any as Array<ServiceMetadata<any, any>>;
+    return (this.services.get(identifier) as any) as Array<ServiceMetadata<any, any>>;
   }
 
   /**
    * Finds registered service in the with a given service identifier.
    */
   private findService (identifier: ServiceIdentifier): ServiceMetadata<any, any> | undefined {
-    const id = ((identifier as any).service instanceof Token)
-      ? (identifier as any).service
-      : identifier;
+    const id = (identifier as any).service instanceof Token ? (identifier as any).service : identifier;
     return this.services.get(id);
   }
 
