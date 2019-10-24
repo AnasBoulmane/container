@@ -1,7 +1,7 @@
 {
   "name": "@express.ts/container",
   "version": "0.8.0",
-  "description": "test package",
+  "description": "Simple yet powerful implementation of the Inversion of Control (IoC) principle. IoC is also known as dependency injection (DI). based on TypeDI",
   "author": "aboulmane <anassboulmane@gmail.com>",
   "main": "dist/index",
   "license": "ISC",
@@ -25,10 +25,12 @@
   "devDependencies": {
     "@types/chai": "^4.2.3",
     "@types/jest": "^24.0.15",
+    "@types/node": "^12.11.1",
     "@types/sinon-chai": "^3.2.3",
     "chai": "^4.2.0",
     "coveralls": "^3.0.6",
     "jest": "^24.9.0",
+    "perf_hooks": "^0.0.1",
     "prettier": "^1.18.2",
     "prettier-tslint": "^0.4.2",
     "reflect-metadata": "^0.1.13",

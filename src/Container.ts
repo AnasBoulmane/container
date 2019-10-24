@@ -25,7 +25,7 @@ export class Container {
   /**
    * All registered handlers.
    */
-  static readonly handlers: Handler[] = [];
+  static readonly handlers: Map<any, Handler[]> = new Map<any, Handler[]>();
 
   // -------------------------------------------------------------------------
   // Public Static Methods
@@ -123,7 +123,16 @@ export class Container {
    * Registers a new handler.
    */
   static registerHandler (handler: Handler): Container {
-    this.handlers.push(handler);
+    const id =
+      handler.propertyName && typeof handler.object !== "string" && !(handler.object instanceof Token)
+        ? handler.object.constructor
+        : handler.object;
+    const handlers = this.handlers.get(id);
+    if (handlers) {
+      handlers.push(handler);
+    } else {
+      this.handlers.set(id, [handler]);
+    }
     return this;
   }
 

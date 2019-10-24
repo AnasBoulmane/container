@@ -8,10 +8,10 @@ import { Container, Service, Token } from "../../../src";
 chai.should();
 chai.use(sinon_chai);
 
-describe("github issues > #41 Token as service id in combination with factory", function () {
+describe("github issues > #41 Token as service id in combination with factory", () => {
   beforeEach(() => Container.reset());
 
-  it("should work properly", function () {
+  it("should work properly", () => {
     interface SomeInterface {
       foo (): string;
     }

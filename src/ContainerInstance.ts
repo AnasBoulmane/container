@@ -26,7 +26,8 @@ export class ContainerInstance {
   /**
    * All registered services.
    */
-  private services: Array<ServiceMetadata<any, any>> = [];
+  private services: Map<ServiceIdentifier<any>, ServiceMetadata<any, any>> = new Map();
+  private groupedServices: Map<ServiceIdentifier<any>, Array<ServiceMetadata<any, any>>> = new Map();
 
   // -------------------------------------------------------------------------
   // Constructor
@@ -63,6 +64,7 @@ export class ContainerInstance {
     const globalContainer = Container.of(undefined);
     const service = globalContainer.findService(identifier);
     const scopedService = this.findService(identifier);
+    const groupedService = this.groupedServices.get(identifier);
 
     if (service && service.global === true) {
       return this.getServiceValue(identifier, service);
@@ -80,6 +82,10 @@ export class ContainerInstance {
       return value;
     }
 
+    if (groupedService && groupedService.length) {
+      return this.getServiceValue(identifier, groupedService[0]);
+    }
+
     return this.getServiceValue(identifier, service);
   }
 
@@ -88,7 +94,11 @@ export class ContainerInstance {
    * Used when service defined with multiple: true flag.
    */
   getMany<T> (id: string | Token<T>): T[] {
-    return this.filterServices(id).map((service) => this.getServiceValue(id, service));
+    try {
+      return this.groupedServices.get(id).map((service) => this.getServiceValue(id, service));
+    } catch (e) {
+      throw new ServiceNotFoundError(id);
+    }
   }
 
   /**
@@ -105,32 +115,42 @@ export class ContainerInstance {
     identifierOrServiceMetadata: ServiceIdentifier | ServiceMetadata<any, any> | (Array<ServiceMetadata<any, any>>),
     value?: any,
   ): this {
+    let newService: ServiceMetadata<any, any> = identifierOrServiceMetadata as any;
     if (identifierOrServiceMetadata instanceof Array) {
       identifierOrServiceMetadata.forEach((v: any) => this.set(v));
       return this;
     }
     if (typeof identifierOrServiceMetadata === "string" || identifierOrServiceMetadata instanceof Token) {
-      return this.set({ id: identifierOrServiceMetadata, value });
+      newService = { id: identifierOrServiceMetadata, value };
     }
     if (
       typeof identifierOrServiceMetadata === "object" &&
       (identifierOrServiceMetadata as { service: Token<any> }).service
     ) {
-      return this.set({ id: (identifierOrServiceMetadata as { service: Token<any> }).service, value });
+      newService = { id: (identifierOrServiceMetadata as { service: Token<any> }).service, value };
     }
     if (identifierOrServiceMetadata instanceof Function) {
-      return this.set({ type: identifierOrServiceMetadata, id: identifierOrServiceMetadata, value });
+      newService = { type: identifierOrServiceMetadata, id: identifierOrServiceMetadata, value };
+    }
+    if (
+      typeof identifierOrServiceMetadata === "object" &&
+      (identifierOrServiceMetadata as { type: any }).type &&
+      !(identifierOrServiceMetadata as { id: any }).id
+    ) {
+      const { type } = identifierOrServiceMetadata as any;
+      newService = { ...identifierOrServiceMetadata, id: type, value };
     }
 
-    // const newService: ServiceMetadata<any, any> = arguments.length === 1 &&
-    //   typeof identifierOrServiceMetadata === "object"  &&
-    //   !(identifierOrServiceMetadata instanceof Token) ? identifierOrServiceMetadata : undefined;
-    const newService: ServiceMetadata<any, any> = identifierOrServiceMetadata as any;
-    const service = this.findService(newService.id);
-    if (service && service.multiple !== true) {
-      Object.assign(service, newService);
+    if (newService.multiple === true) {
+      const otherServices = this.groupedServices.get(newService.id) || [];
+      this.groupedServices.set(newService.id, [...otherServices, newService]);
     } else {
-      this.services.push(newService);
+      const service = this.findService(newService.id);
+      if (service && service.multiple !== true) {
+        Object.assign(service, newService);
+      } else {
+        this.services.set(newService.id, newService);
+      }
     }
 
     return this;
@@ -140,11 +160,7 @@ export class ContainerInstance {
    * Removes services with a given service identifiers (tokens or types).
    */
   remove (...ids: ServiceIdentifier[]): this {
-    ids.forEach((id) => {
-      this.filterServices(id).forEach((service) => {
-        this.services.splice(this.services.indexOf(service), 1);
-      });
-    });
+    ids.forEach((id) => this.services.delete(id));
     return this;
   }
 
@@ -152,7 +168,7 @@ export class ContainerInstance {
    * Completely resets the container by removing all previously registered services from it.
    */
   reset (): this {
-    this.services = [];
+    this.services.clear();
     return this;
   }
 
@@ -164,42 +180,15 @@ export class ContainerInstance {
    * Filters registered service in the with a given service identifier.
    */
   private filterServices (identifier: ServiceIdentifier): Array<ServiceMetadata<any, any>> {
-    return this.services.filter((service) => {
-      if (service.id) {
-        return service.id === identifier;
-      }
-
-      if (service.type && identifier instanceof Function) {
-        return service.type === identifier || identifier.prototype instanceof service.type;
-      }
-
-      return false;
-    });
+    return (this.services.get(identifier) as any) as Array<ServiceMetadata<any, any>>;
   }
 
   /**
    * Finds registered service in the with a given service identifier.
    */
   private findService (identifier: ServiceIdentifier): ServiceMetadata<any, any> | undefined {
-    return this.services.find((service) => {
-      if (service.id) {
-        if (
-          identifier instanceof Object &&
-          service.id instanceof Token &&
-          (identifier as any).service instanceof Token
-        ) {
-          return service.id === (identifier as any).service;
-        }
-
-        return service.id === identifier;
-      }
-
-      if (service.type && identifier instanceof Function) {
-        return service.type === identifier;
-      } // todo: not sure why it was here || identifier.prototype instanceof service.type;
-
-      return false;
-    });
+    const id = (identifier as any).service instanceof Token ? (identifier as any).service : identifier;
+    return this.services.get(id);
   }
 
   /**
@@ -240,8 +229,8 @@ export class ContainerInstance {
         throw new MissingProvidedServiceTypeError(identifier);
       }
 
-      service = { type };
-      this.services.push(service);
+      service = { type, id: type };
+      this.services.set(service.id, service);
     }
 
     // setup constructor parameters for a newly initialized service
@@ -299,7 +288,7 @@ export class ContainerInstance {
    */
   private initializeParams (type: Function, paramTypes: any[]): any[] {
     return paramTypes.map((paramType, index) => {
-      const paramHandler = Container.handlers.find((handler) => handler.object === type && handler.index === index);
+      const paramHandler = (Container.handlers.get(type) || []).find((handler) => handler.index === index);
       if (paramHandler) {
         return paramHandler.value(this);
       }
@@ -323,14 +312,7 @@ export class ContainerInstance {
    * Applies all registered handlers on a given target class.
    */
   private applyPropertyHandlers (target: Function, instance: { [key: string]: any }) {
-    Container.handlers.forEach((handler) => {
-      if (typeof handler.index === "number") {
-        return;
-      }
-      if (handler.object.constructor !== target && !(target.prototype instanceof handler.object.constructor)) {
-        return;
-      }
-
+    (Container.handlers.get(target) || []).forEach((handler) => {
       instance[handler.propertyName] = handler.value(this);
     });
   }
