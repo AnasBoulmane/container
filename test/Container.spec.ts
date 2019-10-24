@@ -6,6 +6,7 @@ import sinon_chai from "sinon-chai";
 
 import { Container, Service, Token } from "../src";
 import { ServiceNotFoundError } from "../src/error/ServiceNotFoundError";
+import { MissingProvidedServiceTypeError } from "../src/error/MissingProvidedServiceTypeError";
 
 chai.should();
 chai.use(sinon_chai);
@@ -80,6 +81,23 @@ describe("Container", () => {
 
       Container.get(FirstTestToken).name.should.be.equal("first");
       Container.get(SecondTestToken).name.should.be.equal("second");
+    });
+
+    it("should be able to set a service like { service: T }", () => {
+      class TestService {
+        constructor (public name: string) {}
+      }
+      const FirstTestToken = new Token<TestService>();
+
+      const firstService = new TestService("first");
+      Container.set({ service: FirstTestToken }, firstService);
+
+      const secondService = new TestService("second");
+      Container.set({ service: TestService }, secondService);
+
+      Container.get({ service: FirstTestToken }).name.should.be.equal("first");
+
+      expect(() => Container.get({ service: TestService })).to.throw(MissingProvidedServiceTypeError);
     });
 
     it("should override previous value if service is written second time", () => {
