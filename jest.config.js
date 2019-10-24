@@ -1,7 +1,7 @@
 module.exports = {
   globals: {
     'ts-jest': {
-      tsConfig: '/Users/aboulmane/Dropbox/@express.ts/container/tsconfig.json',
+      tsConfig: 'tsconfig.json',
     },
   },
   moduleFileExtensions: [

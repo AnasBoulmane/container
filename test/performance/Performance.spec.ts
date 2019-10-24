@@ -16,7 +16,7 @@ describe("Performance", () => {
   beforeEach(() => Container.reset());
 
   describe("registerHandler", () => {
-    it("should have ability to pre-specify class initialization parameters (normal case)", () => {
+    it("should have ability to pre-specify class initialization parameters (normal case)", async () => {
       @Service()
       class ExtraService {
         constructor (public luckyNumber: number, public message: string) {}
@@ -40,7 +40,8 @@ describe("Performance", () => {
       });
 
       getServices();
-      getServicesTimer.then(({ duration }) => duration.should.be.lessThan(3));
+      const { duration: getServicesDuration } = await getServicesTimer;
+      getServicesDuration.should.be.lessThan(5);
     });
 
     it("should be able to manage a lot of Handlers (1000000 Handlers)", async () => {
@@ -60,7 +61,7 @@ describe("Performance", () => {
       setAll();
       setAllTimer.then(({ duration }) => console.log(duration));
       const { duration: setAllDuration } = await setAllTimer;
-      setAllDuration.should.be.lessThan(1500);
+      setAllDuration.should.be.lessThan(2500);
 
       Container.registerHandler({
         object: ExtraService,
@@ -82,7 +83,7 @@ describe("Performance", () => {
       getServices();
       getServicesTimer.then(({ duration }) => console.log(duration));
       const { duration: getServicesDuration } = await getServicesTimer;
-      getServicesDuration.should.be.lessThan(4);
+      getServicesDuration.should.be.lessThan(2);
     });
   });
 
@@ -118,7 +119,7 @@ describe("Performance", () => {
       const getServicesTimerEntry = await getServicesTimer;
 
       setAllTimerEntry.duration.should.be.lessThan(60);
-      getServicesTimerEntry.duration.should.be.lessThan(4);
+      getServicesTimerEntry.duration.should.be.lessThan(2);
     });
 
     it("should be able to manage a lot of services (10000 services)", async () => {
