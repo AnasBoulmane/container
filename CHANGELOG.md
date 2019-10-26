@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.0
+
+* improve get and set performances by changing the way that services and handles are managed
+
 ## 0.8.0
 
 * added new type of dependency injection - function DI
